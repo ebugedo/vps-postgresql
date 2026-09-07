@@ -87,31 +87,15 @@ Configurar estos secretos en el repositorio de GitHub:
 | `VPS_USERNAME` | Usuario SSH del VPS | `deploy` |
 | `VPS_SSH_KEY` | Clave privada SSH | `-----BEGIN OPENSSH...` |
 | `VPS_PORT` | Puerto SSH (default: 22) | `22` |
-
-### Configuración de PostgreSQL en VPS
-
-Las credenciales de PostgreSQL se almacenan en `/opt/app_secrets/secrets.json` en el VPS:
-
-```json
-{
-  "postgresql": {
-    "POSTGRES_DB": "postgresql-db-ia-tests",
-    "POSTGRES_USER": "timeforsoftware@gmail.com",
-    "POSTGRES_PASSWORD": "timeforsoftware",
-    "POSTGRES_PORT": 5432,
-    "TZ": "Europe/Madrid"
-  }
-}
-```
-
-**Nota:** El archivo `secrets.json` se monta como solo lectura en el contenedor.
+| `POSTGRES_DB` | Nombre de la base de datos | `vps_postgresql` |
+| `POSTGRES_USER` | Usuario de PostgreSQL | `db_user` |
+| `POSTGRES_PASSWORD` | Contraseña de PostgreSQL | `tu_password_seguro` |
 
 ### Requisitos
 
 1. Habilitar GitHub Packages en el repositorio
 2. El token `GITHUB_TOKEN` se proporciona automáticamente
-3. Configurar los secretos de VPS en GitHub
-4. Crear `/opt/app_secrets/secrets.json` en el VPS con la configuración de PostgreSQL
+3. Configurar los secretos de VPS y PostgreSQL en GitHub
 
 ## Comandos Útiles
 
