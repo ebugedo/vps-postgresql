@@ -43,35 +43,14 @@ psql -h localhost -p 5432 -U db_user -d vps_postgresql
 docker exec -it vps-postgresql psql -U db_user -d vps_postgresql
 ```
 
-## GitHub Container Registry (GHCR)
+## CI/CD
 
-### Imagen del Contenedor
+### GitHub Container Registry (GHCR)
 
 La imagen está disponible en:
 ```
-ghcr.io/tu-usuario/vps-postgresql:latest
+ghcr.io/ebugedo/vps-postgresql:latest
 ```
-
-### Pull de la Imagen
-
-```bash
-docker pull ghcr.io/tu-usuario/vps-postgresql:latest
-```
-
-### Ejecutar desde GHCR
-
-```bash
-docker run -d \
-  --name vps-postgresql \
-  -p 5432:5432 \
-  -e POSTGRES_DB=vps_postgresql \
-  -e POSTGRES_USER=db_user \
-  -e POSTGRES_PASSWORD=tu_password_seguro \
-  -v postgres_data:/var/lib/postgresql/data \
-  ghcr.io/tu-usuario/vps-postgresql:latest
-```
-
-## CI/CD
 
 ### Workflows de GitHub Actions
 
@@ -80,29 +59,37 @@ docker run -d \
 | Build and Push to GHCR | `docker-build.yml` | Push a `main` / PR | Construir y subir imagen a GHCR |
 | Deploy to VPS | `deploy-vps.yml` | Después de build exitoso / manual | Desplegar imagen en VPS |
 
-#### Build and Push to GHCR (`docker-build.yml`)
-- Se ejecuta en cada push a `main` o PR
+#### Workflow 1: Build and Push to GHCR (`docker-build.yml`)
+
+Se ejecuta automáticamente cuando se hace push a la rama `main` o se crea una PR.
+
 - Construye la imagen Docker
 - Sube la imagen a GitHub Container Registry
+- Genera tags automáticos (latest, SHA, branch)
 
-#### Deploy to VPS (`deploy-vps.yml`)
-- Se ejecuta automáticamente después de un build exitoso o manualmente
+#### Workflow 2: Deploy to VPS (`deploy-vps.yml`)
+
+Se ejecuta automáticamente después de un build exitoso o manualmente.
+
 - Conecta al VPS por SSH
 - Pull de la最新 imagen desde GHCR
-- Detiene y ejecuta el nuevo contenedor
-- Verifica health check
+- Detiene y elimina el contenedor anterior
+- Ejecuta el nuevo contenedor
+- Verifica el health check
 
 ### Secretos Requeridos en GitHub
 
-| Secreto | Descripción |
-|---------|-------------|
-| `VPS_HOST` | IP o hostname del VPS |
-| `VPS_USERNAME` | Usuario SSH del VPS |
-| `VPS_SSH_KEY` | Clave privada SSH |
-| `VPS_PORT` | Puerto SSH (default: 22) |
-| `POSTGRES_DB` | Nombre de la base de datos |
-| `POSTGRES_USER` | Usuario de PostgreSQL |
-| `POSTGRES_PASSWORD` | Contraseña de PostgreSQL |
+Configurar estos secretos en el repositorio de GitHub:
+
+| Secreto | Descripción | Ejemplo |
+|---------|-------------|---------|
+| `VPS_HOST` | IP o hostname del VPS | `192.168.1.100` |
+| `VPS_USERNAME` | Usuario SSH del VPS | `deploy` |
+| `VPS_SSH_KEY` | Clave privada SSH | `-----BEGIN OPENSSH...` |
+| `VPS_PORT` | Puerto SSH (default: 22) | `22` |
+| `POSTGRES_DB` | Nombre de la base de datos | `vps_postgresql` |
+| `POSTGRES_USER` | Usuario de PostgreSQL | `db_user` |
+| `POSTGRES_PASSWORD` | Contraseña de PostgreSQL | `tu_password_seguro` |
 
 ### Requisitos
 

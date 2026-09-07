@@ -29,15 +29,20 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
+            # Navegar al directorio del proyecto
             cd /path/to/your/project
             
+            # Login a GitHub Container Registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
             
+            # Pull de la最新 imagen
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             
+            # Detener y eliminar contenedor actual (si existe)
             docker stop ${{ env.CONTAINER_NAME }} 2>/dev/null || true
             docker rm ${{ env.CONTAINER_NAME }} 2>/dev/null || true
             
+            # Ejecutar nuevo contenedor
             docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               --restart unless-stopped \
@@ -48,10 +53,13 @@ jobs:
               -v vps_postgresql_data:/var/lib/postgresql/data \
               ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             
+            # Esperar a que el contenedor esté listo
             sleep 10
             
+            # Verificar que el contenedor está ejecutándose
             docker ps | grep ${{ env.CONTAINER_NAME }}
             
+            # Verificar health check
             docker exec ${{ env.CONTAINER_NAME }} pg_isready -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}
             
             echo "Deploy completado exitosamente"
