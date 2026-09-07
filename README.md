@@ -73,12 +73,42 @@ docker run -d \
 
 ## CI/CD
 
-El workflow de GitHub Actions (`docker-publish.yml`) construye y sube automáticamente la imagen al GHCR cuando se hace push a la rama `main`.
+### Workflows de GitHub Actions
+
+| Workflow | Archivo | Trigger | Función |
+|----------|---------|---------|---------|
+| Build and Push to GHCR | `docker-build.yml` | Push a `main` / PR | Construir y subir imagen a GHCR |
+| Deploy to VPS | `deploy-vps.yml` | Después de build exitoso / manual | Desplegar imagen en VPS |
+
+#### Build and Push to GHCR (`docker-build.yml`)
+- Se ejecuta en cada push a `main` o PR
+- Construye la imagen Docker
+- Sube la imagen a GitHub Container Registry
+
+#### Deploy to VPS (`deploy-vps.yml`)
+- Se ejecuta automáticamente después de un build exitoso o manualmente
+- Conecta al VPS por SSH
+- Pull de la最新 imagen desde GHCR
+- Detiene y ejecuta el nuevo contenedor
+- Verifica health check
+
+### Secretos Requeridos en GitHub
+
+| Secreto | Descripción |
+|---------|-------------|
+| `VPS_HOST` | IP o hostname del VPS |
+| `VPS_USERNAME` | Usuario SSH del VPS |
+| `VPS_SSH_KEY` | Clave privada SSH |
+| `VPS_PORT` | Puerto SSH (default: 22) |
+| `POSTGRES_DB` | Nombre de la base de datos |
+| `POSTGRES_USER` | Usuario de PostgreSQL |
+| `POSTGRES_PASSWORD` | Contraseña de PostgreSQL |
 
 ### Requisitos
 
 1. Habilitar GitHub Packages en el repositorio
 2. El token `GITHUB_TOKEN` se proporciona automáticamente
+3. Configurar los secretos de VPS y PostgreSQL en GitHub
 
 ## Comandos Útiles
 
