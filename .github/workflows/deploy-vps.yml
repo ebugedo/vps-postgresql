@@ -1,10 +1,7 @@
 name: Deploy to VPS
 
 on:
-  workflow_run:
-    workflows: ["Build and Push to GHCR"]
-    types: [completed]
-    branches: [main]
+  workflow_call:
   workflow_dispatch:
 
 env:
@@ -53,6 +50,7 @@ jobs:
             docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               --restart unless-stopped \
+              --network nginx-net \
               -p $POSTGRES_PORT:5432 \
               -e POSTGRES_DB=$POSTGRES_DB \
               -e POSTGRES_USER=$POSTGRES_USER \
