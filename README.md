@@ -43,42 +43,59 @@ psql -h localhost -p 5432 -U db_user -d vps_postgresql
 docker exec -it vps-postgresql psql -U db_user -d vps_postgresql
 ```
 
-## GitHub Container Registry (GHCR)
+## CI/CD
 
-### Imagen del Contenedor
+### GitHub Container Registry (GHCR)
 
 La imagen está disponible en:
 ```
-ghcr.io/tu-usuario/vps-postgresql:latest
+ghcr.io/ebugedo/vps-postgresql:latest
 ```
 
-### Pull de la Imagen
+### Workflows de GitHub Actions
 
-```bash
-docker pull ghcr.io/tu-usuario/vps-postgresql:latest
-```
+| Workflow | Archivo | Trigger | Función |
+|----------|---------|---------|---------|
+| Build and Push to GHCR | `docker-build.yml` | Push a `main` / PR | Construir y subir imagen a GHCR |
+| Deploy to VPS | `deploy-vps.yml` | Después de build exitoso / manual | Desplegar imagen en VPS |
 
-### Ejecutar desde GHCR
+#### Workflow 1: Build and Push to GHCR (`docker-build.yml`)
 
-```bash
-docker run -d \
-  --name vps-postgresql \
-  -p 5432:5432 \
-  -e POSTGRES_DB=vps_postgresql \
-  -e POSTGRES_USER=db_user \
-  -e POSTGRES_PASSWORD=tu_password_seguro \
-  -v postgres_data:/var/lib/postgresql/data \
-  ghcr.io/tu-usuario/vps-postgresql:latest
-```
+Se ejecuta automáticamente cuando se hace push a la rama `main` o se crea una PR.
 
-## CI/CD
+- Construye la imagen Docker
+- Sube la imagen a GitHub Container Registry
+- Genera tags automáticos (latest, SHA, branch)
 
-El workflow de GitHub Actions (`docker-publish.yml`) construye y sube automáticamente la imagen al GHCR cuando se hace push a la rama `main`.
+#### Workflow 2: Deploy to VPS (`deploy-vps.yml`)
+
+Se ejecuta automáticamente después de un build exitoso o manualmente.
+
+- Conecta al VPS por SSH
+- Pull de la最新 imagen desde GHCR
+- Detiene y elimina el contenedor anterior
+- Ejecuta el nuevo contenedor
+- Verifica el health check
+
+### Secretos Requeridos en GitHub
+
+Configurar estos secretos en el repositorio de GitHub:
+
+| Secreto | Descripción | Ejemplo |
+|---------|-------------|---------|
+| `VPS_HOST` | IP o hostname del VPS | `192.168.1.100` |
+| `VPS_USERNAME` | Usuario SSH del VPS | `deploy` |
+| `VPS_SSH_KEY` | Clave privada SSH | `-----BEGIN OPENSSH...` |
+| `VPS_PORT` | Puerto SSH (default: 22) | `22` |
+| `POSTGRES_DB` | Nombre de la base de datos | `vps_postgresql` |
+| `POSTGRES_USER` | Usuario de PostgreSQL | `db_user` |
+| `POSTGRES_PASSWORD` | Contraseña de PostgreSQL | `tu_password_seguro` |
 
 ### Requisitos
 
 1. Habilitar GitHub Packages en el repositorio
 2. El token `GITHUB_TOKEN` se proporciona automáticamente
+3. Configurar los secretos de VPS y PostgreSQL en GitHub
 
 ## Comandos Útiles
 
