@@ -15,9 +15,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password_123}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
-      - postgres_network
+      - nginx-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-db_user} -d ${POSTGRES_DB:-vps_postgresql}"]
       interval: 10s
@@ -30,5 +29,5 @@ volumes:
     driver: local
 
 networks:
-  postgres_network:
-    driver: bridge
+  nginx-net:
+    external: true

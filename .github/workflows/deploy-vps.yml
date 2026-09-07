@@ -53,6 +53,7 @@ jobs:
             docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               --restart unless-stopped \
+              --network nginx-net \
               -p $POSTGRES_PORT:5432 \
               -e POSTGRES_DB=$POSTGRES_DB \
               -e POSTGRES_USER=$POSTGRES_USER \
