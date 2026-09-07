@@ -1,0 +1,16 @@
+.git
+.gitignore
+.env
+README.md
+AGENTS.md
+docker-compose.yml
+.dockerignore
+.github
+.vscode
+.idea
+*.md
+*.log
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
