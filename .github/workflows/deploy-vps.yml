@@ -32,9 +32,6 @@ jobs:
             POSTGRES_PORT=$(jq -r '.postgresql.POSTGRES_PORT' /opt/app_secrets/secrets.json)
             TZ=$(jq -r '.postgresql.TZ' /opt/app_secrets/secrets.json)
             
-            # Navegar al directorio del proyecto
-            cd /path/to/your/project
-            
             # Login a GitHub Container Registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
             
