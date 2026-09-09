@@ -25,12 +25,32 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
+            # Verificar que existe secrets.json
+            if [ ! -f /opt/app_secrets/secrets.json ]; then
+              echo "Error: /opt/app_secrets/secrets.json no existe"
+              exit 1
+            fi
+            
             # Leer configuración de PostgreSQL desde secrets.json
-            POSTGRES_DB=$(jq -r '.postgresql.POSTGRES_DB' /opt/app_secrets/secrets.json)
-            POSTGRES_USER=$(jq -r '.postgresql.POSTGRES_USER' /opt/app_secrets/secrets.json)
-            POSTGRES_PASSWORD=$(jq -r '.postgresql.POSTGRES_PASSWORD' /opt/app_secrets/secrets.json)
-            POSTGRES_PORT=$(jq -r '.postgresql.POSTGRES_PORT' /opt/app_secrets/secrets.json)
-            TZ=$(jq -r '.postgresql.TZ' /opt/app_secrets/secrets.json)
+            POSTGRES_DB=$(grep '"POSTGRES_DB"' /opt/app_secrets/secrets.json | sed 's/.*: *"//;s/".*//')
+            POSTGRES_USER=$(grep '"POSTGRES_USER"' /opt/app_secrets/secrets.json | sed 's/.*: *"//;s/".*//')
+            POSTGRES_PASSWORD=$(grep '"POSTGRES_PASSWORD"' /opt/app_secrets/secrets.json | sed 's/.*: *"//;s/".*//')
+            POSTGRES_PORT=$(grep '"POSTGRES_PORT"' /opt/app_secrets/secrets.json | sed 's/.*: *//;s/,.*//')
+            TZ=$(grep '"TZ"' /opt/app_secrets/secrets.json | sed 's/.*: *"//;s/".*//')
+            
+            # Validar que las variables se cargaron correctamente
+            if [ -z "$POSTGRES_DB" ] || [ -z "$POSTGRES_USER" ] || [ -z "$POSTGRES_PASSWORD" ]; then
+              echo "Error: No se pudieron leer las variables de secrets.json"
+              echo "POSTGRES_DB: $POSTGRES_DB"
+              echo "POSTGRES_USER: $POSTGRES_USER"
+              exit 1
+            fi
+            
+            echo "Variables cargadas correctamente:"
+            echo "POSTGRES_DB: $POSTGRES_DB"
+            echo "POSTGRES_USER: $POSTGRES_USER"
+            echo "POSTGRES_PORT: $POSTGRES_PORT"
+            echo "TZ: $TZ"
             
             # Login a GitHub Container Registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
